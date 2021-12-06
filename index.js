@@ -14,12 +14,12 @@ async function getStatus(day){
 	let initialized = false;
 	let input = false;
 
-	let check = path => fs.access(path).then(x=>true).catch(x=>false);
+	let check = path => fs.access(new URL(path, import.meta.url)).then(x=>true).catch(x=>false);
 
-	if(await check(`./${day}`)){
-		if(await check(`./${day}/index.js`)){
+	if(await check(`${day}`)){
+		if(await check(`${day}/index.js`)){
 			initialized = true;
-			if (await check(`./${day}/input`)) {
+			if (await check(`${day}/input`)) {
 				input = true;
 			}
 		}
@@ -52,7 +52,9 @@ async function downloadInput(day){
 		{headers:{cookie: `session=${key}`}}
 	)
 	.then(response=>response.text())
-	.then(text=>fs.writeFile(`./${day}/input`, text));
+	.then(text=>fs.writeFile(
+		new URL(`${day}/input`, import.meta.url), text
+	));
 	console.log(`[dl] Input for day ${day} downloaded!`);
 }
 
@@ -66,8 +68,22 @@ async function init(day){
 	// Do we need to setup the directory?
 	if(!status.initialized){
 		// do the folder shits
-		await fs.mkdir(`./${day}`).catch(e=>null);
-		await fs.copyFile(`./template/index.js`, `./${day}/index.js`);
+		await fs.mkdir(
+			new URL(
+				`${day}`,
+				import.meta.url
+			)
+		).catch(e=>null);
+		await fs.copyFile(
+			new URL(
+				`template/index.js`,
+				import.meta.url
+			),
+			new URL(
+				`${day}/index.js`,
+				import.meta.url
+			)
+		);
 		console.log(`[init] Day ${day} initialized!`);
 	}else{
 		console.log(`[init] Day ${day} is already initialized.`);
